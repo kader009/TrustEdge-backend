@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { ReviewService } from './review.service';
 import { sendErrorResponse } from '../../../utils/sendErrorResponse';
+import {
+  recalculateAllProductRatings,
+  updateProductRating,
+} from './review.utils';
 
 export const reviewController = {
   async createReview(req: Request, res: Response): Promise<void> {
@@ -89,6 +93,37 @@ export const reviewController = {
       );
 
       res.status(200).json({ success: true, message: result.message });
+    } catch (error) {
+      sendErrorResponse(error, res);
+    }
+  },
+
+  // Admin utility: Recalculate single product rating
+  async recalculateProductRating(req: Request, res: Response): Promise<void> {
+    try {
+      const productId = req.params.productId;
+      const result = await updateProductRating(productId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Product rating recalculated successfully',
+        data: result,
+      });
+    } catch (error) {
+      sendErrorResponse(error, res);
+    }
+  },
+
+  // Admin utility: Recalculate all products ratings
+  async recalculateAllRatings(req: Request, res: Response): Promise<void> {
+    try {
+      const results = await recalculateAllProductRatings();
+
+      res.status(200).json({
+        success: true,
+        message: `Recalculated ratings for ${results.length} products`,
+        data: results,
+      });
     } catch (error) {
       sendErrorResponse(error, res);
     }
