@@ -8,6 +8,7 @@ import { CategoryRoutes } from './app/modules/category/category.route';
 import { reviewRoutes } from './app/modules/reviews/review.route';
 import { voteRoutes } from './app/modules/votes/vote.route';
 import { commentRoutes } from './app/modules/comments/comment.route';
+import { healthRoutes } from './app/modules/health/health.route';
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 //Application routes
+app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/products', productRoutes);
