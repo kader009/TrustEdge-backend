@@ -2,29 +2,29 @@ import { Types } from 'mongoose';
 
 export interface IReview {
   _id?: Types.ObjectId;
-  product: Types.ObjectId; // Relation with Product
-  user: Types.ObjectId; // Relation with User
+  product: Types.ObjectId;
+  user: Types.ObjectId;
 
   // Basic Review Info
-  title: string; // Review title
-  description: string; // Detailed review text
-  rating: number; // 1-5 scale
-  comment?: string; // Short comment (optional, backward compatible)
-  images?: string[]; // Review images
-  purchaseSource?: string; // Where user bought the product
+  title: string;
+  description: string;
+  rating: number;
+  comment?: string;
+  images?: string[];
+  purchaseSource?: string;
 
   // Status & Moderation
-  status: 'pending' | 'published' | 'unpublished'; // Review status
-  moderationReason?: string; // Admin's reason for unpublishing
+  status: 'pending' | 'published' | 'unpublished';
+  moderationReason?: string;
 
   // Premium Features
-  isPremium: boolean; // Is this a premium review?
-  price?: number; // Price for premium review
+  isPremium: boolean;
+  price?: number;
 
   // Counts
-  upvoteCount?: number; // Total upvotes
-  downvoteCount?: number; // Total downvotes
-  commentCount?: number; // Total comments
+  upvoteCount?: number;
+  downvoteCount?: number;
+  commentCount?: number;
 
   createdAt?: Date;
   updatedAt?: Date;

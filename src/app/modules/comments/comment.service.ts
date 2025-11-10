@@ -4,7 +4,6 @@ import { IComment } from './comment.interface';
 
 // Create a new comment on a review
 const createComment = async (payload: IComment) => {
-  // Check if review exists
   const review = await Review.findById(payload.review);
   if (!review) {
     throw new Error('Review not found');

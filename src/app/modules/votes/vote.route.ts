@@ -6,9 +6,6 @@ import { VoteValidation } from './vote.validation';
 
 const router = Router();
 
-// All voting routes require authentication
-// Users must be logged in to vote
-
 // Upvote a review
 router.post(
   '/upvote/:reviewId',

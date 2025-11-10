@@ -2,11 +2,11 @@ import { Types } from 'mongoose';
 
 export interface IComment {
   _id?: Types.ObjectId;
-  review: Types.ObjectId; // Which review this comment belongs to
-  user: Types.ObjectId; // Who posted the comment
-  text: string; // Comment content
-  parentComment?: Types.ObjectId; // For nested replies (optional)
-  isDeleted?: boolean; // Soft delete for admin moderation
+  review: Types.ObjectId;
+  user: Types.ObjectId;
+  text: string;
+  parentComment?: Types.ObjectId;
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
