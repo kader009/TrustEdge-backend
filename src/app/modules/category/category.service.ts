@@ -1,5 +1,5 @@
-import { Category } from "./category.model";
-import { ICategory } from "./category.interface";
+import { Category } from './category.model';
+import { ICategory } from './category.interface';
 
 class CategoryServiceClass {
   async createCategory(categoryData: Partial<ICategory>): Promise<ICategory> {
@@ -9,7 +9,7 @@ class CategoryServiceClass {
 
   async getAllCategories(): Promise<ICategory[]> {
     return await Category.find(
-      { isActive: true }, // filter
+      {}, // no filter, return all
       { _id: 1, name: 1, slug: 1, image: 1 }
     ).sort({ createdAt: -1 });
   }
@@ -19,7 +19,7 @@ class CategoryServiceClass {
   }
 
   async getSingleCategory(id: string): Promise<ICategory | null> {
-    return await Category.findById(id).populate("createdBy", "name email");
+    return await Category.findById(id).populate('createdBy', 'name email');
   }
 
   async updateCategory(
