@@ -9,7 +9,7 @@ class CategoryServiceClass {
 
   async getAllCategories(): Promise<ICategory[]> {
     return await Category.find(
-      {}, // no filter, return all
+      {},
       { _id: 1, name: 1, slug: 1, image: 1 }
     ).sort({ createdAt: -1 });
   }

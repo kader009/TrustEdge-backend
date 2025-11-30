@@ -31,17 +31,33 @@ export const connectDB = async () => {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false, // Disable mongoose buffering for serverless
-      maxPoolSize: 10,
+      maxPoolSize: 5, // Reduced from 10 to prevent connection exhaustion
+      minPoolSize: 1, // Minimum connections to maintain
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      family: 4, // Use IPv4
     };
 
     mongoose.set('strictQuery', false);
+
+    // Add connection event listeners
+    mongoose.connection.on('connected', () => {
+      console.log('✅ Mongoose connected to MongoDB');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ Mongoose connection error:', err);
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      console.log('⚠️ Mongoose disconnected from MongoDB');
+    });
 
     cached.promise = mongoose
       .connect(config.database_uri as string, opts)
       .then((mongooseInstance) => {
         console.log('MongoDB connected successfully');
+        console.log(`Active connections: ${mongoose.connection.readyState}`);
         return mongooseInstance;
       });
   }
