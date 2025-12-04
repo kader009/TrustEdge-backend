@@ -10,12 +10,12 @@ export interface IProduct {
   category: string;
   brand?: string;
   images: string[];
-  stock: number;
+  stock?: number;
   tags?: string[];
   ratings: number;
   numReviews: number;
   size?: string;
-  createdBy: Types.ObjectId;
+  createdBy?: Types.ObjectId;
   createdAt?: Date;
   isActive?: boolean;
 }
