@@ -176,4 +176,19 @@ export const commentController = {
       sendErrorResponse(error, res);
     }
   },
+
+  // Get all comments across all reviews (admin only)
+  async getAllComments(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await CommentService.getAllComments();
+
+      res.status(200).json({
+        success: true,
+        message: 'All comments retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      sendErrorResponse(error, res);
+    }
+  },
 };

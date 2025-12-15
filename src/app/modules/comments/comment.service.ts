@@ -204,6 +204,17 @@ const updateReviewCommentCount = async (reviewId: string) => {
   return count;
 };
 
+// Get all comments across all reviews (admin only)
+const getAllComments = async () => {
+  const comments = await Comment.find({ isDeleted: false })
+    .populate('user', 'name email image')
+    .populate('review', 'rating comment product')
+    .populate('parentComment', 'text user')
+    .sort({ createdAt: -1 });
+
+  return comments;
+};
+
 export const CommentService = {
   createComment,
   getReviewComments,
@@ -214,4 +225,5 @@ export const CommentService = {
   hardDeleteComment,
   getCommentCount,
   getUserComments,
+  getAllComments,
 };
