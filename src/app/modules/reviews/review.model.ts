@@ -3,11 +3,6 @@ import { IReview } from './review.interface';
 
 const reviewSchema = new Schema<IReview>(
   {
-    product: {
-      type: Schema.Types.ObjectId,
-      ref: 'Product',
-      required: [true, 'Product reference is required'],
-    },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -28,6 +23,11 @@ const reviewSchema = new Schema<IReview>(
       trim: true,
       minlength: [20, 'Description must be at least 20 characters'],
       maxlength: [5000, 'Description cannot exceed 5000 characters'],
+    },
+    category: {
+      type: String,
+      required: [true, 'Category is required'],
+      trim: true,
     },
     rating: {
       type: Number,
@@ -107,10 +107,8 @@ const reviewSchema = new Schema<IReview>(
   }
 );
 
-// Prevent duplicate reviews per user per product
-reviewSchema.index({ product: 1, user: 1 }, { unique: true });
-
 // Indexes for filtering and searching
+reviewSchema.index({ category: 1 });
 reviewSchema.index({ status: 1, createdAt: -1 }); // Filter by status
 reviewSchema.index({ isPremium: 1 }); // Filter premium reviews
 reviewSchema.index({ rating: 1 }); // Filter by rating

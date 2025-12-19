@@ -6,17 +6,17 @@ const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 // Create review validation
 export const createReviewSchema = z.object({
   body: z.object({
-    product: z
-      .string({ required_error: 'Product ID is required' })
-      .regex(objectIdRegex, 'Invalid product ID format'),
     title: z
-      .string({ required_error: 'Review title is required' })
+      .string({ required_error: 'Review title/Product name is required' })
       .min(5, 'Title must be at least 5 characters')
       .max(200, 'Title cannot exceed 200 characters'),
     description: z
       .string({ required_error: 'Review description is required' })
       .min(20, 'Description must be at least 20 characters')
       .max(5000, 'Description cannot exceed 5000 characters'),
+    category: z
+      .string({ required_error: 'Category is required' })
+      .min(1, 'Category must be at least 1 character'),
     rating: z
       .number({ required_error: 'Rating is required' })
       .int('Rating must be an integer')
@@ -26,7 +26,7 @@ export const createReviewSchema = z.object({
       .string()
       .max(1000, 'Comment cannot exceed 1000 characters')
       .optional(),
-    images: z.array(z.string().url('Invalid image URL')).optional(),
+    images: z.array(z.string()).optional(),
     purchaseSource: z.string().max(500, 'Purchase source too long').optional(),
     isPremium: z.boolean().optional().default(false),
     price: z.number().min(0, 'Price must be non-negative').optional(),
@@ -49,9 +49,10 @@ export const updateReviewSchema = z.object({
       .min(20, 'Description must be at least 20 characters')
       .max(5000, 'Description cannot exceed 5000 characters')
       .optional(),
+    category: z.string().optional(),
     rating: z.number().int().min(1).max(5).optional(),
     comment: z.string().max(1000).optional(),
-    images: z.array(z.string().url()).optional(),
+    images: z.array(z.string()).optional(),
     purchaseSource: z.string().max(500).optional(),
     isPremium: z.boolean().optional(),
     price: z.number().min(0).optional(),

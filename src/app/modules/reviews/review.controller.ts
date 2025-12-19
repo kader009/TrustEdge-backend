@@ -1,15 +1,11 @@
 import { Request, Response } from 'express';
 import { ReviewService } from './review.service';
 import { sendErrorResponse } from '../../../utils/sendErrorResponse';
-import {
-  recalculateAllProductRatings,
-  updateProductRating,
-} from './review.utils';
 
 export const reviewController = {
   async createReview(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.userId;
       if (!userId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
@@ -30,8 +26,8 @@ export const reviewController = {
 
   async getAllReviews(req: Request, res: Response): Promise<void> {
     try {
-      const productId = req.query.productId as string;
-      const result = await ReviewService.getAllReviews(productId);
+      const category = req.query.category as string;
+      const result = await ReviewService.getAllReviews(category);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       sendErrorResponse(error, res);
@@ -53,7 +49,7 @@ export const reviewController = {
 
   async updateReview(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.userId;
       if (!userId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
@@ -77,8 +73,8 @@ export const reviewController = {
 
   async deleteReview(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
-      const userRole = req.user?.role;
+      const userId = (req as any).user?.userId;
+      const userRole = (req as any).user?.role;
 
       if (!userId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -98,40 +94,8 @@ export const reviewController = {
     }
   },
 
-  // Admin utility: Recalculate single product rating
-  async recalculateProductRating(req: Request, res: Response): Promise<void> {
-    try {
-      const productId = req.params.productId;
-      const result = await updateProductRating(productId);
-
-      res.status(200).json({
-        success: true,
-        message: 'Product rating recalculated successfully',
-        data: result,
-      });
-    } catch (error) {
-      sendErrorResponse(error, res);
-    }
-  },
-
-  // Admin utility: Recalculate all products ratings
-  async recalculateAllRatings(req: Request, res: Response): Promise<void> {
-    try {
-      const results = await recalculateAllProductRatings();
-
-      res.status(200).json({
-        success: true,
-        message: `Recalculated ratings for ${results.length} products`,
-        data: results,
-      });
-    } catch (error) {
-      sendErrorResponse(error, res);
-    }
-  },
-
   // ==================== ADMIN MODERATION ====================
 
-  // Get pending reviews
   async getPendingReviews(req: Request, res: Response): Promise<void> {
     try {
       const result = await ReviewService.getPendingReviews();
@@ -145,7 +109,6 @@ export const reviewController = {
     }
   },
 
-  // Approve a review
   async approveReview(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -161,19 +124,10 @@ export const reviewController = {
     }
   },
 
-  // Unpublish a review
   async unpublishReview(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { reason } = req.body;
-
-      if (!reason) {
-        res.status(400).json({
-          success: false,
-          message: 'Moderation reason is required',
-        });
-        return;
-      }
 
       const result = await ReviewService.unpublishReview(id, reason);
 
@@ -187,23 +141,10 @@ export const reviewController = {
     }
   },
 
-  // Get reviews by status
   async getReviewsByStatus(req: Request, res: Response): Promise<void> {
     try {
       const { status } = req.params;
-
-      if (!['pending', 'published', 'unpublished'].includes(status)) {
-        res.status(400).json({
-          success: false,
-          message:
-            'Invalid status. Must be: pending, published, or unpublished',
-        });
-        return;
-      }
-
-      const result = await ReviewService.getReviewsByStatus(
-        status as 'pending' | 'published' | 'unpublished'
-      );
+      const result = await ReviewService.getReviewsByStatus(status);
 
       res.status(200).json({
         success: true,
@@ -216,7 +157,6 @@ export const reviewController = {
 
   // ==================== SEARCH & FILTER ====================
 
-  // Search and filter reviews
   async searchReviews(req: Request, res: Response): Promise<void> {
     try {
       const {
@@ -242,8 +182,8 @@ export const reviewController = {
             : isPremium === 'false'
             ? false
             : undefined,
-        sort: sort as 'date' | 'rating' | 'votes',
-        order: order as 'asc' | 'desc',
+        sort: (sort as 'date' | 'rating' | 'votes') || 'date',
+        order: (order as 'asc' | 'desc') || 'desc',
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
       };
@@ -260,7 +200,6 @@ export const reviewController = {
     }
   },
 
-  // Get premium reviews
   async getPremiumReviews(req: Request, res: Response): Promise<void> {
     try {
       const result = await ReviewService.getPremiumReviews();
@@ -274,7 +213,6 @@ export const reviewController = {
     }
   },
 
-  // Get review preview (for premium)
   async getReviewPreview(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;

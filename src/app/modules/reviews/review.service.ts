@@ -1,59 +1,23 @@
 import { Review } from './review.model';
 import { IReview } from './review.interface';
-import { Product } from '../products/product.model';
-import { Types } from 'mongoose';
 
 const createReview = async (payload: IReview) => {
-  // Check if user already reviewed this product
-  const existing = await Review.findOne({
-    product: payload.product,
-    user: payload.user,
-  });
-
-  if (existing) {
-    throw new Error('You have already reviewed this product.');
-  }
-
   const review = await Review.create(payload);
-
-  // Update Product rating after save
-  const productId =
-    typeof payload.product === 'string'
-      ? new Types.ObjectId(payload.product)
-      : payload.product;
-
-  const stats = await Review.aggregate([
-    { $match: { product: productId } },
-    {
-      $group: {
-        _id: '$product',
-        numReviews: { $sum: 1 },
-        avgRating: { $avg: '$rating' },
-      },
-    },
-  ]);
-
-  if (stats.length > 0) {
-    await Product.findByIdAndUpdate(payload.product, {
-      numReviews: stats[0].numReviews,
-      ratings: Math.round(stats[0].avgRating * 10) / 10, // Round to 1 decimal
-    });
-  }
-
   return review;
 };
 
-const getAllReviews = async (productId?: string) => {
-  const filter = productId ? { product: productId } : {};
+const getAllReviews = async (category?: string) => {
+  const filter = category
+    ? { category, status: 'published' }
+    : { status: 'published' };
+
   return await Review.find(filter)
-    .populate('user', 'name email')
-    .populate('product', 'title slug price');
+    .populate('user', 'name email image')
+    .sort({ createdAt: -1 });
 };
 
 const getSingleReview = async (id: string) => {
-  return await Review.findById(id)
-    .populate('user', 'name email')
-    .populate('product', 'title slug price');
+  return await Review.findById(id).populate('user', 'name email image');
 };
 
 const updateReview = async (
@@ -66,29 +30,6 @@ const updateReview = async (
   if (review.user.toString() !== userId) throw new Error('Unauthorized.');
 
   const updated = await Review.findByIdAndUpdate(id, payload, { new: true });
-
-  // Recalculate product rating
-  const productId =
-    typeof review.product === 'string'
-      ? new Types.ObjectId(review.product)
-      : review.product;
-
-  const stats = await Review.aggregate([
-    { $match: { product: productId } },
-    {
-      $group: {
-        _id: '$product',
-        numReviews: { $sum: 1 },
-        avgRating: { $avg: '$rating' },
-      },
-    },
-  ]);
-
-  await Product.findByIdAndUpdate(review.product, {
-    numReviews: stats[0]?.numReviews || 0,
-    ratings: stats[0]?.avgRating ? Math.round(stats[0].avgRating * 10) / 10 : 0,
-  });
-
   return updated;
 };
 
@@ -101,28 +42,6 @@ const deleteReview = async (id: string, userId: string, isAdmin = false) => {
 
   await Review.findByIdAndDelete(id);
 
-  // Update product stats
-  const productId =
-    typeof review.product === 'string'
-      ? new Types.ObjectId(review.product)
-      : review.product;
-
-  const stats = await Review.aggregate([
-    { $match: { product: productId } },
-    {
-      $group: {
-        _id: '$product',
-        numReviews: { $sum: 1 },
-        avgRating: { $avg: '$rating' },
-      },
-    },
-  ]);
-
-  await Product.findByIdAndUpdate(review.product, {
-    numReviews: stats[0]?.numReviews || 0,
-    ratings: stats[0]?.avgRating ? Math.round(stats[0].avgRating * 10) / 10 : 0,
-  });
-
   return { message: 'Review deleted successfully.' };
 };
 
@@ -132,63 +51,47 @@ const deleteReview = async (id: string, userId: string, isAdmin = false) => {
 const getPendingReviews = async () => {
   return await Review.find({ status: 'pending' })
     .populate('user', 'name email image')
-    .populate('product', 'title slug images')
     .sort({ createdAt: -1 });
 };
 
 // Approve a review (pending → published)
-const approveReview = async (reviewId: string) => {
-  const review = await Review.findById(reviewId);
+const approveReview = async (id: string) => {
+  const updated = await Review.findByIdAndUpdate(
+    id,
+    { status: 'published', moderationReason: undefined },
+    { new: true }
+  );
 
-  if (!review) {
+  if (!updated) {
     throw new Error('Review not found');
   }
 
-  if (review.status === 'published') {
-    throw new Error('Review is already published');
-  }
-
-  review.status = 'published';
-  review.moderationReason = undefined; // Clear any previous reason
-  await review.save();
-
-  return await Review.findById(reviewId)
-    .populate('user', 'name email')
-    .populate('product', 'title slug');
+  return updated.populate('user', 'name email');
 };
 
 // Unpublish a review (published → unpublished)
-const unpublishReview = async (reviewId: string, reason: string) => {
-  const review = await Review.findById(reviewId);
-
-  if (!review) {
-    throw new Error('Review not found');
-  }
-
-  if (review.status === 'unpublished') {
-    throw new Error('Review is already unpublished');
-  }
-
+const unpublishReview = async (id: string, reason: string) => {
   if (!reason || reason.trim().length === 0) {
     throw new Error('Moderation reason is required');
   }
 
-  review.status = 'unpublished';
-  review.moderationReason = reason;
-  await review.save();
+  const updated = await Review.findByIdAndUpdate(
+    id,
+    { status: 'unpublished', moderationReason: reason },
+    { new: true }
+  );
 
-  return await Review.findById(reviewId)
-    .populate('user', 'name email')
-    .populate('product', 'title slug');
+  if (!updated) {
+    throw new Error('Review not found');
+  }
+
+  return updated.populate('user', 'name email');
 };
 
 // Get reviews by status
-const getReviewsByStatus = async (
-  status: 'pending' | 'published' | 'unpublished'
-) => {
+const getReviewsByStatus = async (status: string) => {
   return await Review.find({ status })
     .populate('user', 'name email image')
-    .populate('product', 'title slug images')
     .sort({ createdAt: -1 });
 };
 
@@ -228,6 +131,11 @@ const searchAndFilterReviews = async (options: SearchFilterOptions) => {
     filter.$text = { $search: keyword };
   }
 
+  // Category filter
+  if (category) {
+    filter.category = category;
+  }
+
   // Filter by rating
   if (rating) {
     filter.rating = rating;
@@ -260,34 +168,17 @@ const searchAndFilterReviews = async (options: SearchFilterOptions) => {
   const skip = (page - 1) * limit;
 
   // Get reviews with population
-  let query = Review.find(filter)
+  const reviews = await Review.find(filter)
     .populate('user', 'name email image')
-    .populate('product', 'title slug images category')
     .sort(sortObj)
     .skip(skip)
     .limit(limit);
-
-  // If category filter, we need to populate and filter
-  if (category) {
-    query = query.populate({
-      path: 'product',
-      match: { category: category },
-      select: 'title slug images category',
-    });
-  }
-
-  const reviews = await query;
-
-  // Filter out null products (if category didn't match)
-  const filteredReviews = category
-    ? reviews.filter((review) => review.product !== null)
-    : reviews;
 
   // Get total count for pagination
   const total = await Review.countDocuments(filter);
 
   return {
-    reviews: filteredReviews,
+    reviews,
     pagination: {
       page,
       limit,
@@ -301,15 +192,15 @@ const searchAndFilterReviews = async (options: SearchFilterOptions) => {
 const getPremiumReviews = async () => {
   return await Review.find({ isPremium: true, status: 'published' })
     .populate('user', 'name email image')
-    .populate('product', 'title slug images')
     .sort({ createdAt: -1 });
 };
 
 // Get review preview (for premium reviews - first 100 chars)
 const getReviewPreview = async (reviewId: string) => {
-  const review = await Review.findById(reviewId)
-    .populate('user', 'name email image')
-    .populate('product', 'title slug images');
+  const review = await Review.findById(reviewId).populate(
+    'user',
+    'name email image'
+  );
 
   if (!review) {
     throw new Error('Review not found');

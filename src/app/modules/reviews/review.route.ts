@@ -8,29 +8,12 @@ const router = express.Router();
 
 // Public routes
 router.get('/', reviewController.getAllReviews);
+router.get('/search', reviewController.searchReviews);
+router.get('/premium', reviewController.getPremiumReviews);
+router.get('/preview/:id', reviewController.getReviewPreview);
+router.get('/:id', reviewController.getSingleReview);
 
-router.get(
-  '/:id',
-  validateRequest(ReviewValidation.getSingleReviewSchema),
-  reviewController.getSingleReview
-);
-
-// Search & Filter routes (public)
-router.get(
-  '/search/reviews',
-  validateRequest(ReviewValidation.searchReviewsSchema),
-  reviewController.searchReviews
-);
-
-router.get('/premium/all', reviewController.getPremiumReviews);
-
-router.get(
-  '/preview/:id',
-  validateRequest(ReviewValidation.getSingleReviewSchema),
-  reviewController.getReviewPreview
-);
-
-// Protected routes (user + admin)
+// Protected routes (User & Admin)
 router.post(
   '/',
   authMiddleware(['user', 'admin']),
@@ -48,27 +31,19 @@ router.patch(
 router.delete(
   '/:id',
   authMiddleware(['user', 'admin']),
-  validateRequest(ReviewValidation.deleteReviewSchema),
   reviewController.deleteReview
 );
 
-// Admin moderation routes
+// Admin only routes
 router.get(
   '/admin/pending',
   authMiddleware(['admin']),
   reviewController.getPendingReviews
 );
 
-router.get(
-  '/admin/status/:status',
-  authMiddleware(['admin']),
-  reviewController.getReviewsByStatus
-);
-
 router.patch(
   '/admin/approve/:id',
   authMiddleware(['admin']),
-  validateRequest(ReviewValidation.approveReviewSchema),
   reviewController.approveReview
 );
 
@@ -79,17 +54,10 @@ router.patch(
   reviewController.unpublishReview
 );
 
-// Admin utility routes
-router.post(
-  '/admin/recalculate-all',
+router.get(
+  '/admin/status/:status',
   authMiddleware(['admin']),
-  reviewController.recalculateAllRatings
-);
-
-router.post(
-  '/admin/recalculate/:productId',
-  authMiddleware(['admin']),
-  reviewController.recalculateProductRating
+  reviewController.getReviewsByStatus
 );
 
 export const reviewRoutes = router;

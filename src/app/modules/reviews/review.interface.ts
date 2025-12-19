@@ -2,10 +2,10 @@ import { Types } from 'mongoose';
 
 export interface IReview {
   _id?: Types.ObjectId;
-  product: Types.ObjectId;
   user: Types.ObjectId;
   title: string;
   description: string;
+  category: string;
   rating: number;
   comment?: string;
   images?: string[];

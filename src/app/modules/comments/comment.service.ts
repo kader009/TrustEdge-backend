@@ -177,14 +177,7 @@ const getUserComments = async (userId: string) => {
     user: userId,
     isDeleted: false,
   })
-    .populate('review', 'rating comment product')
-    .populate({
-      path: 'review',
-      populate: {
-        path: 'product',
-        select: 'title slug images',
-      },
-    })
+    .populate('review', 'title rating description category images')
     .sort({ createdAt: -1 });
 
   return comments;
@@ -208,7 +201,7 @@ const updateReviewCommentCount = async (reviewId: string) => {
 const getAllComments = async () => {
   const comments = await Comment.find({ isDeleted: false })
     .populate('user', 'name email image')
-    .populate('review', 'rating comment product')
+    .populate('review', 'title rating description category')
     .populate('parentComment', 'text user')
     .sort({ createdAt: -1 });
 
