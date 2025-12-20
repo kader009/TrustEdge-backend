@@ -80,4 +80,11 @@ router.get(
   commentController.getAllComments
 );
 
+// Approve a comment (admin only)
+router.patch(
+  '/admin/approve/:id',
+  authMiddleware(['admin']),
+  commentController.approveComment
+);
+
 export const commentRoutes = router;

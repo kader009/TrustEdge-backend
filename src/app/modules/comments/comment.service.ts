@@ -23,9 +23,6 @@ const createComment = async (payload: IComment) => {
 
   const comment = await Comment.create(payload);
 
-  // Update review comment count
-  await updateReviewCommentCount(payload.review.toString());
-
   return await Comment.findById(comment._id)
     .populate('user', 'name email image')
     .populate('parentComment', 'text user');
@@ -37,6 +34,7 @@ const getReviewComments = async (reviewId: string) => {
   const topLevelComments = await Comment.find({
     review: reviewId,
     parentComment: null,
+    status: 'published',
     isDeleted: false,
   })
     .populate('user', 'name email image')
@@ -47,6 +45,7 @@ const getReviewComments = async (reviewId: string) => {
     topLevelComments.map(async (comment) => {
       const replies = await Comment.find({
         parentComment: comment._id,
+        status: 'published',
         isDeleted: false,
       })
         .populate('user', 'name email image')
@@ -81,6 +80,7 @@ const getSingleComment = async (id: string) => {
 const getCommentReplies = async (commentId: string) => {
   const replies = await Comment.find({
     parentComment: commentId,
+    status: 'published',
     isDeleted: false,
   })
     .populate('user', 'name email image')
@@ -139,6 +139,27 @@ const deleteComment = async (id: string, userId: string, isAdmin = false) => {
   return { message: 'Comment deleted successfully' };
 };
 
+// Approve a comment (admin only)
+const approveComment = async (id: string) => {
+  const comment = await Comment.findById(id);
+
+  if (!comment) {
+    throw new Error('Comment not found');
+  }
+
+  if (comment.status === 'published') {
+    throw new Error('Comment is already published');
+  }
+
+  comment.status = 'published';
+  await comment.save();
+
+  // Update review comment count
+  await updateReviewCommentCount(comment.review.toString());
+
+  return comment;
+};
+
 // Hard delete a comment (admin only - for inappropriate content)
 const hardDeleteComment = async (id: string) => {
   const comment = await Comment.findById(id);
@@ -165,6 +186,7 @@ const hardDeleteComment = async (id: string) => {
 const getCommentCount = async (reviewId: string) => {
   const count = await Comment.countDocuments({
     review: reviewId,
+    status: 'published',
     isDeleted: false,
   });
 
@@ -187,6 +209,7 @@ const getUserComments = async (userId: string) => {
 const updateReviewCommentCount = async (reviewId: string) => {
   const count = await Comment.countDocuments({
     review: reviewId,
+    status: 'published',
     isDeleted: false,
   });
 
@@ -219,4 +242,5 @@ export const CommentService = {
   getCommentCount,
   getUserComments,
   getAllComments,
+  approveComment,
 };

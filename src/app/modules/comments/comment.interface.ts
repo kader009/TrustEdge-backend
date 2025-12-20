@@ -6,6 +6,7 @@ export interface IComment {
   user: Types.ObjectId;
   text: string;
   parentComment?: Types.ObjectId;
+  status: 'pending' | 'published';
   isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

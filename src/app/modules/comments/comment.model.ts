@@ -25,9 +25,14 @@ const commentSchema = new Schema<IComment>(
       ref: 'Comment',
       default: null, // null means it's a top-level comment
     },
+    status: {
+      type: String,
+      enum: ['pending', 'published'],
+      default: 'pending',
+    },
     isDeleted: {
       type: Boolean,
-      default: false, // For admin moderation
+      default: false,
     },
   },
   {

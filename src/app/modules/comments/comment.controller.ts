@@ -191,4 +191,20 @@ export const commentController = {
       sendErrorResponse(error, res);
     }
   },
+
+  // Approve a comment (admin only)
+  async approveComment(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const result = await CommentService.approveComment(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Comment approved successfully',
+        data: result,
+      });
+    } catch (error) {
+      sendErrorResponse(error, res);
+    }
+  },
 };
