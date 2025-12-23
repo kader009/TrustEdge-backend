@@ -208,7 +208,7 @@ const getReviewPreview = async (reviewId: string) => {
 
   if (!review.isPremium) {
     // If not premium, return full review
-    return review;
+  return review;
   }
 
   // Return preview only (first 100 characters)

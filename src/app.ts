@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://aronyo.vercel.app',
+      'https://trustedge.vercel.app',
       'https://sandbox.sslcommerz.com',
     ],
     credentials: true,
