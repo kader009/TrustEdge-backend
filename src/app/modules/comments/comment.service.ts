@@ -1,12 +1,27 @@
 import { Comment } from './comment.model';
 import { Review } from '../reviews/review.model';
 import { IComment } from './comment.interface';
+import { Payment } from '../payment/payment.model';
 
 // Create a new comment on a review
 const createComment = async (payload: IComment) => {
   const review = await Review.findById(payload.review);
   if (!review) {
     throw new Error('Review not found');
+  }
+
+  // Check premium access
+  if (review.isPremium) {
+    const payment = await Payment.findOne({
+      user: payload.user,
+      review: payload.review,
+      status: 'paid',
+    });
+    if (!payment) {
+      throw new Error(
+        'This is a premium review. You must unlock it to comment.'
+      );
+    }
   }
 
   // If it's a reply, check if parent comment exists

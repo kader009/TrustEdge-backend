@@ -1,5 +1,6 @@
 import { Review } from './review.model';
 import { IReview } from './review.interface';
+import { Payment } from '../payment/payment.model';
 
 const createReview = async (payload: IReview) => {
   const review = await Review.create(payload);
@@ -16,8 +17,39 @@ const getAllReviews = async (category?: string) => {
     .sort({ createdAt: -1 });
 };
 
-const getSingleReview = async (id: string) => {
-  return await Review.findById(id).populate('user', 'name email image');
+const getSingleReview = async (id: string, userId?: string) => {
+  const review = await Review.findById(id).populate('user', 'name email image');
+
+  if (!review) {
+    throw new Error('Review not found');
+  }
+
+  // If review is premium, check if user has paid
+  if (review.isPremium) {
+    // If no userId, or if user hasn't paid, return preview
+    let hasAccess = false;
+
+    if (userId) {
+      const payment = await Payment.findOne({
+        user: userId,
+        review: id,
+        status: 'paid',
+      });
+      if (payment) {
+        hasAccess = true;
+      }
+    }
+
+    if (!hasAccess) {
+      return {
+        ...review.toObject(),
+        description: review.description.substring(0, 100) + '...',
+        isPreview: true,
+      };
+    }
+  }
+
+  return review;
 };
 
 const updateReview = async (

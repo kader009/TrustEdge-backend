@@ -1,5 +1,5 @@
-export type TUserRole = "user" | "admin";
-export type TUserStatus = "active" | "inactive" | "banned";
+export type TUserRole = 'user' | 'admin';
+export type TUserStatus = 'active' | 'inactive' | 'banned';
 
 export interface IUser {
   _id?: string;

@@ -1,26 +1,26 @@
-import { Schema, model } from "mongoose";
-import { IUser } from "./user.interface";
+import { Schema, model } from 'mongoose';
+import { IUser } from './user.interface';
 
 const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, 'Name is required'],
       trim: true,
-      minlength: [5, "Name must be at least 5 characters long"],
+      minlength: [5, 'Name must be at least 5 characters long'],
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, 'Email is required'],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters long"],
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters long'],
     },
     image: {
       type: String,
@@ -28,18 +28,18 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: {
-        values: ["user", "admin"],
-        message: "Role must be either user or admin",
+        values: ['user', 'admin'],
+        message: 'Role must be either user or admin',
       },
-      default: "user",
+      default: 'user',
     },
     status: {
       type: String,
       enum: {
-        values: ["active", "inactive", "banned"],
-        message: "Status must be active, inactive, or banned",
+        values: ['active', 'inactive', 'banned'],
+        message: 'Status must be active, inactive, or banned',
       },
-      default: "active",
+      default: 'active',
     },
     isDeleted: {
       type: Boolean,
@@ -52,4 +52,4 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-export const User = model<IUser>("User", userSchema);
+export const User = model<IUser>('User', userSchema);

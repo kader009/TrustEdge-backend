@@ -36,7 +36,8 @@ export const reviewController = {
 
   async getSingleReview(req: Request, res: Response): Promise<void> {
     try {
-      const result = await ReviewService.getSingleReview(req.params.id);
+      const userId = (req as any).user?.userId;
+      const result = await ReviewService.getSingleReview(req.params.id, userId);
       if (!result) {
         res.status(404).json({ success: false, message: 'Review not found' });
         return;

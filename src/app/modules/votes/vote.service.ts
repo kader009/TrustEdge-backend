@@ -1,6 +1,7 @@
 import { Vote } from './vote.model';
 import { Review } from '../reviews/review.model';
 import { Types } from 'mongoose';
+import { Payment } from '../payment/payment.model';
 
 // Upvote a review
 const upvoteReview = async (reviewId: string, userId: string) => {
@@ -8,6 +9,18 @@ const upvoteReview = async (reviewId: string, userId: string) => {
   const review = await Review.findById(reviewId);
   if (!review) {
     throw new Error('Review not found');
+  }
+
+  // Check premium access
+  if (review.isPremium) {
+    const payment = await Payment.findOne({
+      user: userId,
+      review: reviewId,
+      status: 'paid',
+    });
+    if (!payment) {
+      throw new Error('This is a premium review. You must unlock it to vote.');
+    }
   }
 
   // Check if user already voted
@@ -54,6 +67,20 @@ const downvoteReview = async (reviewId: string, userId: string) => {
   const review = await Review.findById(reviewId);
   if (!review) {
     throw new Error('Review not found');
+  }
+
+  // Check premium access
+  if (review.isPremium) {
+    const payment = await Payment.findOne({
+      user: userId,
+      review: reviewId,
+      status: 'paid',
+    });
+    if (!payment) {
+      throw new Error(
+        'This is a premium review. You must unlock it to vote.'
+      );
+    }
   }
 
   // Check if user already voted

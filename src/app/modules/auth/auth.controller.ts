@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from "express";
-import { authService } from "./auth.service";
-import { sendErrorResponse } from "../../../utils/sendErrorResponse";
+import { Request, Response } from 'express';
+import { authService } from './auth.service';
+import { sendErrorResponse } from '../../../utils/sendErrorResponse';
 
 export const authController = {
   async register(req: Request, res: Response) {
@@ -12,7 +12,7 @@ export const authController = {
 
       res.status(201).json({
         success: true,
-        message: "User registered successfully!",
+        message: 'User registered successfully!',
         data: { user: result.user }, // no need to send access token to frontend
       });
     } catch (error) {
@@ -45,22 +45,22 @@ export const authController = {
   async logout(req: Request, res: Response) {
     try {
       // Clear both access and refresh tokens
-      res.clearCookie("accessToken", {
+      res.clearCookie('accessToken', {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: 'none',
         secure: true,
-        path: "/",
+        path: '/',
       });
-      res.clearCookie("refreshToken", {
+      res.clearCookie('refreshToken', {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: 'none',
         secure: true,
-        path: "/",
+        path: '/',
       });
 
       res
         .status(200)
-        .json({ success: true, message: "Logged out successfully" });
+        .json({ success: true, message: 'Logged out successfully' });
     } catch (error) {
       sendErrorResponse(error, res);
     }
@@ -72,17 +72,17 @@ export const authController = {
       if (!refreshToken) {
         res
           .status(401)
-          .json({ success: false, message: "Refresh token not found" });
+          .json({ success: false, message: 'Refresh token not found' });
         return;
       }
 
       const result = await authService.refreshToken(refreshToken);
 
       // Set new short-lived access token cookie
-      res.cookie("accessToken", result.accessToken, {
+      res.cookie('accessToken', result.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -90,7 +90,7 @@ export const authController = {
     } catch (error) {
       res
         .status(401)
-        .json({ success: false, message: "Refresh token invalid", error });
+        .json({ success: false, message: 'Refresh token invalid', error });
     }
   },
 };
@@ -98,21 +98,21 @@ export const authController = {
 // Helper: set both refresh & access tokens on login/register
 
 const setAuthCookies = (res: Response, result: any) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  
+  const isProduction = process.env.NODE_ENV === 'production';
+
   // Refresh token
-  res.cookie("refreshToken", result.refreshToken, {
+  res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
     secure: true,
-    sameSite: "none", 
+    sameSite: 'none',
     maxAge: 7 * 24 * 60 * 60 * 1000 * 30,
   });
 
   // Access token
-  res.cookie("accessToken", result.accessToken, {
+  res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
-    secure: true, 
-    sameSite: "none", 
+    secure: true,
+    sameSite: 'none',
     maxAge: 15 * 60 * 1000,
   });
 };
