@@ -26,7 +26,7 @@ Modern REST API featuring a standalone review system where users can post review
 **Core:** Node.js v22, TypeScript v5.8, Express v5.1, MongoDB v6.18, Mongoose v8.14  
 **Auth:** JWT (Access + Refresh Tokens), bcrypt, cookie-parser  
 **Validation:** Zod v3.24  
-**Payment:** SSLCommerz (Planned)
+**Payment:** SSLCommerz Integration
 
 ---
 
@@ -132,6 +132,22 @@ GET    /votes/counts/:reviewId        # Get vote counts (Up/Down)
 GET    /votes/my-vote/:reviewId       # Get user's current vote
 ```
 
+### Payment System (SSLCommerz)
+
+```
+# User (Requires Auth)
+POST   /payment/init                  # Initialize payment for premium review
+GET    /payment/history               # Get user's payment history
+
+# Admin (Requires Admin Auth)
+GET    /payment/analytics             # Get earnings and popular reviews
+
+# Webhooks/Callbacks (Public)
+POST   /payment/success               # SSLCommerz success callback
+POST   /payment/fail                  # SSLCommerz failure callback
+POST   /payment/cancel                # SSLCommerz cancel callback
+```
+
 ---
 
 ## Database Models
@@ -140,6 +156,7 @@ GET    /votes/my-vote/:reviewId       # Get user's current vote
 **Review:** title, description, category, rating, status (pending/published/unpublished), images, isPremium, price  
 **Vote:** user, review, voteType (upvote/downvote)  
 **Comment:** text, user, review, parentComment (for replies)
+**Payment:** transactionId, user, review, amount, status (paid/failed/pending/cancelled)
 
 ---
 

@@ -36,8 +36,25 @@ export const refreshTokenSchema = z.object({
   }),
 });
 
+// Social login validation
+export const socialLoginSchema = z.object({
+  body: z.object({
+    name: z
+      .string({ required_error: 'Name is required' })
+      .min(5, 'Name must be at least 5 characters'),
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email('Invalid email format'),
+    provider: z.enum(['google', 'github'], {
+      required_error: 'Provider is required',
+    }),
+    image: z.string().url('Invalid image URL').optional(),
+  }),
+});
+
 export const AuthValidation = {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
+  socialLoginSchema,
 };

@@ -93,6 +93,32 @@ export const authController = {
         .json({ success: false, message: 'Refresh token invalid', error });
     }
   },
+
+  async socialLogin(req: Request, res: Response) {
+    try {
+      const { name, email, provider, image } = req.body;
+      const result = await authService.socialLogin(
+        name,
+        email,
+        provider,
+        image
+      );
+
+      setAuthCookies(res, result);
+
+      res.status(200).json({
+        success: true,
+        message: 'Social login successful!',
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        },
+      });
+    } catch (error) {
+      sendErrorResponse(error, res);
+    }
+  },
 };
 
 // Helper: set both refresh & access tokens on login/register

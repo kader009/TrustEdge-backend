@@ -1,14 +1,16 @@
 export type TUserRole = 'user' | 'admin';
 export type TUserStatus = 'active' | 'inactive' | 'banned';
+export type TAuthProvider = 'local' | 'google' | 'github';
 
 export interface IUser {
   _id?: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   image?: string;
   role: TUserRole;
   status?: TUserStatus;
+  provider?: TAuthProvider;
   isDeleted?: boolean;
   createdAt?: Date;
 }

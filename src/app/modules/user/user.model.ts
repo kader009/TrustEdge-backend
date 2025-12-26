@@ -19,11 +19,18 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters long'],
     },
     image: {
       type: String,
+    },
+    provider: {
+      type: String,
+      enum: {
+        values: ['local', 'google', 'github'],
+        message: 'Provider must be local, google, or github',
+      },
+      default: 'local',
     },
     role: {
       type: String,

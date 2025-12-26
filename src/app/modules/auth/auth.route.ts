@@ -25,4 +25,10 @@ router.post(
   authController.refreshToken
 );
 
+router.post(
+  '/social-login',
+  validateRequest(AuthValidation.socialLoginSchema),
+  authController.socialLogin
+);
+
 export const authRoutes = router;
